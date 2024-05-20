@@ -67,6 +67,7 @@ echo "Saving credentials to ./credentials.txt"
 rm -f ./credentials.txt
 echo "Username: $DANTE_USER" >> ./credentials.txt
 echo "Password: $DANTE_PASS" >> ./credentials.txt
+echo "Port: $DANTE_PORT" >> ./credentials.txt
 
 # If this is an oracle cloud instance (/etc/oracle-cloud-agent/ exists)
 if [ -d /etc/oracle-cloud-agent ]; then
