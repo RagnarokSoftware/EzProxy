@@ -46,6 +46,12 @@ while true; do
     fi
 done
 
+# Specify a port (default 1080)
+read -p "Please enter the port you want to run on [1080]: " DANTE_PORT
+if [ -z "$DANTE_PORT" ]; then
+    DANTE_PORT=1080
+fi
+
 # Set username and password
 read -p "Please enter the username (None for user): " DANTE_USER
 read -p "Please enter the password (None for random): " DANTE_PASS
@@ -86,6 +92,7 @@ sudo docker run -d \
     --net=host \
     -e DANTE_USER=$DANTE_USER \
     -e DANTE_PASS=$DANTE_PASS \
+    -e DANTE_PORT=$DANTE_PORT \
     -e DANTE_INTERFACES=$SELECTED_INTERFACES \
     dante
 
