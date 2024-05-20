@@ -24,7 +24,7 @@ useradd -m -p $(echo $DANTE_PASS | openssl passwd -1 -stdin) -s /bin/bash $DANTE
 CONFIG_FILE="/etc/sockd.conf"
 rm -f $CONFIG_FILE
 
-echo "socksmethod: username\n" >> $CONFIG_FILE
+echo "socksmethod: username" >> $CONFIG_FILE
 for INTERFACE in $DANTE_INTERFACES; do
     echo "internal: $INTERFACE port = $DANTE_PORT" >> $CONFIG_FILE
 done
