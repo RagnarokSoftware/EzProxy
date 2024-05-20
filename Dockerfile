@@ -15,6 +15,8 @@ ENV DANTE_WORKERS="10"
 RUN apt-get update && apt-get install -y \
     build-essential \
     curl \
+    automake \
+    autoconf \
     openssl \
     unzip \
     && rm -rf /var/lib/apt/lists/*
@@ -24,13 +26,13 @@ WORKDIR $DANTE_DIR
 RUN curl -fsSL -o dante.tar.gz $DANTE_URL
 RUN echo "$DANTE_SHA256  dante.tar.gz" | sha256sum -c -
 RUN tar -xzf dante.tar.gz --strip-components=1
+RUN cp /usr/share/automake*/config.guess ./config.guess
 RUN ./configure
-RUN make
 RUN make install
 
 COPY ./entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 EXPOSE 1080
 
-#CMD sockd -f $CFGFILE -p $PIDFILE -N $WORKERS
 ENTRYPOINT ["/entrypoint.sh"]

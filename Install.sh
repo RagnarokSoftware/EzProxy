@@ -62,9 +62,19 @@ rm -f ./credentials.txt
 echo "Username: $DANTE_USER" >> ./credentials.txt
 echo "Password: $DANTE_PASS" >> ./credentials.txt
 
+# If this is an oracle cloud instance (/etc/oracle-cloud-agent/ exists)
+if [ -d /etc/oracle-cloud-agent ]; then
+    # https://github.com/baunilhaeu/neveridledocker
+    git clone https://github.com/baunilhaeu/neveridledocker neveridledocker
+    # remove existing neveridledocker if it exists
+    sudo docker rm -f neveridledocker
+    sudo docker build -t neveridledocker neveridledocker
+    sudo docker run -d --restart=always --name=neveridledocker neveridledocker
+fi
+
 # build the docker image
 sudo docker build -t dante .
-
+ 
 # Ensure existing danted container is removed
 sudo docker rm -f dante
 
@@ -82,3 +92,4 @@ sudo docker run -d \
 # Output the credentials
 echo "Username: $DANTE_USER"
 echo "Password: $DANTE_PASS"
+
