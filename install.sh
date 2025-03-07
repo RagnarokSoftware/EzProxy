@@ -53,20 +53,20 @@ if [ -z "$DANTE_PORT" ]; then
 fi
 
 # Set username and password
-read -p "Please enter the username (None for user): " PROXY_USER
-read -p "Please enter the password (None for random): " PROXY_PASS
-if [ "$PROXY_USER" == "None" ]; then
-    PROXY_USER="user"
+read -p "Please enter the username (None for user): " DANTE_USER
+read -p "Please enter the password (None for random): " DANTE_PASS
+if [ "$DANTE_USER" == "None" ]; then
+    DANTE_USER="user"
 fi
-if [ "$PROXY_PASS" == "None" ]; then
-    PROXY_PASS=$(openssl rand -base64 12)
+if [ "$DANTE_PASS" == "None" ]; then
+    DANTE_PASS=$(openssl rand -base64 12)
 fi
 
 #Output these to a file for user to read
 echo "Saving credentials to ./credentials.txt"
 rm -f ./credentials.txt
-echo "Username: $PROXY_USER" >> ./credentials.txt
-echo "Password: $PROXY_PASS" >> ./credentials.txt
+echo "Username: $DANTE_USER" >> ./credentials.txt
+echo "Password: $DANTE_PASS" >> ./credentials.txt
 echo "Socks Port: $DANTE_PORT" >> ./credentials.txt
 
 # If this is an oracle cloud instance (/etc/oracle-cloud-agent/ exists)
@@ -100,8 +100,8 @@ sudo docker run -d \
     --restart=always \
     --name=dante \
     --net=host \
-    -e PROXY_USER=$PROXY_USER \
-    -e PROXY_PASS=$PROXY_PASS \
+    -e DANTE_USER=$DANTE_USER \
+    -e DANTE_PASS=$DANTE_PASS \
     -e DANTE_PORT=$DANTE_PORT \
     -e DANTE_INTERFACES=$SELECTED_INTERFACES_CSV \
     --log-driver local \
@@ -109,5 +109,5 @@ sudo docker run -d \
     dante
 
 # Output the credentials
-echo "Username: $PROXY_USER"
-echo "Password: $PROXY_PASS"
+echo "Username: $DANTE_USER"
+echo "Password: $DANTE_PASS"
