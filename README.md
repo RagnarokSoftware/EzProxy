@@ -36,3 +36,6 @@ sudo iptables -L -v
 sudo apt install iptables-persistent
 sudo netfilter-persistent save
 ```
+
+You can check the proxy manually by the following command (Works on the instance itself)
+`curl --socks5 user:pass@public-ip:port https://icanhazip.com/`
