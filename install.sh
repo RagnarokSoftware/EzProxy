@@ -125,15 +125,15 @@ sudo docker build -t dante .
 sudo docker rm -f dante
 
 # Run the danted container
-SELECTED_INTERFACES_CSV=$(IFS=' '; echo "${SELECTED_INTERFACES[*]}")
+SELECTED_INTERFACES_STR="${SELECTED_INTERFACES[*]}"
 sudo docker run -d \
     --restart=always \
     --name=dante \
     --net=host \
-    -e DANTE_USER=$DANTE_USER \
-    -e DANTE_PASS=$DANTE_PASS \
-    -e DANTE_PORT=$DANTE_PORT \
-    -e DANTE_INTERFACES=$SELECTED_INTERFACES_CSV \
+    -e DANTE_USER="$DANTE_USER" \
+    -e DANTE_PASS="$DANTE_PASS" \
+    -e DANTE_PORT="$DANTE_PORT" \
+    -e DANTE_INTERFACES="$SELECTED_INTERFACES_STR" \
     --log-driver local \
     --log-opt max-size=10m \
     dante
