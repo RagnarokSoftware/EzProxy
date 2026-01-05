@@ -105,11 +105,23 @@ if [ -d /etc/oracle-cloud-agent ]; then
 
     # Add iptables rules if iptables is in use
     if command -v iptables &>/dev/null && sudo iptables -L &>/dev/null; then
+        # Find REJECT rule line number to insert before it
+        REJECT_LINE=$(sudo iptables -L INPUT --line-numbers -n | grep -i "reject" | head -1 | awk '{print $1}')
+
         if ! sudo iptables -C INPUT -p tcp --dport 22 -m state --state NEW -j ACCEPT 2>/dev/null; then
-            sudo iptables -A INPUT -p tcp --dport 22 -m state --state NEW -j ACCEPT
+            if [ -n "$REJECT_LINE" ]; then
+                sudo iptables -I INPUT $REJECT_LINE -p tcp --dport 22 -m state --state NEW -j ACCEPT
+                REJECT_LINE=$((REJECT_LINE + 1))
+            else
+                sudo iptables -A INPUT -p tcp --dport 22 -m state --state NEW -j ACCEPT
+            fi
         fi
         if ! sudo iptables -C INPUT -p tcp --dport $DANTE_PORT -m state --state NEW -j ACCEPT 2>/dev/null; then
-            sudo iptables -A INPUT -p tcp --dport $DANTE_PORT -m state --state NEW -j ACCEPT
+            if [ -n "$REJECT_LINE" ]; then
+                sudo iptables -I INPUT $REJECT_LINE -p tcp --dport $DANTE_PORT -m state --state NEW -j ACCEPT
+            else
+                sudo iptables -A INPUT -p tcp --dport $DANTE_PORT -m state --state NEW -j ACCEPT
+            fi
         fi
 
         # Save iptables rules
