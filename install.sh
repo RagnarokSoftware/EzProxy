@@ -24,6 +24,16 @@ if ! [ -x "$(command -v docker)" ]; then
     sudo apt-get install -y docker-compose
 fi
 
+# Fix Docker DNS if systemd-resolved is in use (127.0.0.53 doesn't work in containers)
+if grep -q "nameserver 127.0.0.53" /etc/resolv.conf 2>/dev/null; then
+    if [ ! -f /etc/docker/daemon.json ]; then
+        echo "Configuring Docker DNS (systemd-resolved detected)..."
+        sudo mkdir -p /etc/docker
+        echo '{"dns": ["8.8.8.8", "8.8.4.4"]}' | sudo tee /etc/docker/daemon.json
+        sudo systemctl restart docker
+    fi
+fi
+
 # Select interfaces to run on (Can be multiple)
 echo "Please select the interfaces you want to run on"
 INTERFACES=$(ls /sys/class/net)
@@ -36,6 +46,12 @@ while true; do
             SELECTED_INTERFACES+=($INTERFACE)
         fi
     done
+
+    # Ensure at least one interface selected
+    if [ ${#SELECTED_INTERFACES[@]} -eq 0 ]; then
+        echo "You must select at least one interface"
+        continue
+    fi
 
     # Confirm selection
     echo "You have selected ${SELECTED_INTERFACES[@]}"
@@ -53,12 +69,12 @@ if [ -z "$DANTE_PORT" ]; then
 fi
 
 # Set username and password
-read -p "Please enter the username (None for user): " DANTE_USER
-read -p "Please enter the password (None for random): " DANTE_PASS
-if [ "$DANTE_USER" == "None" ]; then
+read -p "Please enter the username [user]: " DANTE_USER
+read -p "Please enter the password [random]: " DANTE_PASS
+if [ -z "$DANTE_USER" ]; then
     DANTE_USER="user"
 fi
-if [ "$DANTE_PASS" == "None" ]; then
+if [ -z "$DANTE_PASS" ]; then
     DANTE_PASS=$(openssl rand -base64 12)
 fi
 
@@ -86,6 +102,20 @@ if [ -d /etc/oracle-cloud-agent ]; then
         --log-driver local \
         --log-opt max-size=10m \
         neveridledocker
+
+    # Add iptables rules if iptables is in use
+    if command -v iptables &>/dev/null && sudo iptables -L &>/dev/null; then
+        if ! sudo iptables -C INPUT -p tcp --dport 22 -m state --state NEW -j ACCEPT 2>/dev/null; then
+            sudo iptables -A INPUT -p tcp --dport 22 -m state --state NEW -j ACCEPT
+        fi
+        if ! sudo iptables -C INPUT -p tcp --dport $DANTE_PORT -m state --state NEW -j ACCEPT 2>/dev/null; then
+            sudo iptables -A INPUT -p tcp --dport $DANTE_PORT -m state --state NEW -j ACCEPT
+        fi
+
+        # Save iptables rules
+        sudo apt-get install -y iptables-persistent
+        sudo netfilter-persistent save
+    fi
 fi
 
 # build the docker image
