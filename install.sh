@@ -95,7 +95,7 @@ sudo docker build -t dante .
 sudo docker rm -f dante
 
 # Run the danted container
-SELECTED_INTERFACES_CSV=$(IFS=,; echo "${SELECTED_INTERFACES[*]}")
+SELECTED_INTERFACES_CSV=$(IFS=' '; echo "${SELECTED_INTERFACES[*]}")
 sudo docker run -d \
     --restart=always \
     --name=dante \
